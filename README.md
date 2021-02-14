@@ -1,8 +1,14 @@
 # Internal Iterator
 
+[![Crates.io](https://img.shields.io/crates/v/internal-iterator.svg)](https://crates.io/crates/internal-iterator)
+[![API reference](https://docs.rs/internal-iterator/badge.svg)](https://docs.rs/internal-iterator/)
+[![License](https://img.shields.io/badge/license-MIT_OR_Apache--2.0-blue.svg)](
+https://github.com/jDomantas/internal-iterator#license)
+[![Tests](https://github.com/jDomantas/internal-iterator/workflows/Tests/badge.svg)](https://github.com/jDomantas/internal-iterator/actions?query=workflow%3ATests+branch%3Amaster)
+
 Internal iterator equivalent of `std::iter::Iterator`.
 
-Features:
+Featuring:
 
 * `std`-like api
 * `#![forbid(unsafe)]`
