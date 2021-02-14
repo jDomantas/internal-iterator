@@ -1,4 +1,5 @@
 pub mod adaptors;
+mod std_impls;
 
 use std::cmp::Ordering;
 use crate::adaptors::*;
@@ -460,38 +461,14 @@ pub trait IteratorExt: IntoIterator {
 
 impl<I: IntoIterator> IteratorExt for I {}
 
+/// Conversion from an `InternalIterator`.
+///
+/// This is internal-iterator equivalent of [`std::iter::FromIterator`].
 pub trait FromIternalIterator<A> {
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoInternalIterator<Item = A>;
 }
-
-impl<A> FromIternalIterator<A> for Vec<A> {
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoInternalIterator<Item = A>
-    {
-        let mut v = Vec::new();
-        iter.into_internal_iter().for_each(|item| {
-            v.push(item);
-        });
-        v
-    }
-}
-
-// impl<A, C> FromIternalIterator<A> for C
-// where
-//     C: Default + Extend<A>,
-// {
-//     fn from_iter<T>(iter: T) -> Self
-//     where
-//         T: IntoInternalIterator<Item = A>
-//     {
-//         let mut result = C::default();
-//         iter.into_internal_iter().for_each(|item| result.extend(std::iter::once(item)));
-//         result
-//     }
-// }
 
 fn max_by<A, C: FnMut(&A, &A) -> Ordering>(x: A, y: A, mut compare: C) -> A {
     match compare(&x, &y) {
