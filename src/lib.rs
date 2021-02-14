@@ -102,7 +102,7 @@ pub trait InternalIterator: Sized {
     /// ```
     fn collect<B>(self) -> B
     where
-        B: FromIternalIterator<Self::Item>,
+        B: FromInternalIterator<Self::Item>,
     {
         B::from_iter(self)
     }
@@ -450,7 +450,23 @@ where
     }
 }
 
+/// Extension trait to add conversion to [`InternalIterator`] for regular
+/// iterators.
 pub trait IteratorExt: IntoIterator {
+    /// Convert an [`std::iter::Iterator`] to an [`InternalIterator`].
+    ///
+    /// Composing internal iterators together requires all used iterators to be
+    /// internal iterators. Given that regular iterators are far more prevalent,
+    /// this function can be used to allow them to be used together with
+    /// internal iterators.
+    ///
+    /// ```
+    /// # use internal_iterator::InternalIterator;
+    /// use internal_iterator::IteratorExt;
+    ///
+    /// fn flatten_ranges(ranges: impl InternalIterator<Item = (i32, i32)>) -> impl InternalIterator<Item = i32> {
+    ///     ranges.flat_map(|(from, to)| (from..to).into_internal())
+    /// }
     fn into_internal(self) -> Internal<Self::IntoIter>
     where
         Self: Sized,
@@ -464,7 +480,7 @@ impl<I: IntoIterator> IteratorExt for I {}
 /// Conversion from an `InternalIterator`.
 ///
 /// This is internal-iterator equivalent of [`std::iter::FromIterator`].
-pub trait FromIternalIterator<A> {
+pub trait FromInternalIterator<A> {
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoInternalIterator<Item = A>;

@@ -1,81 +1,81 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::hash::Hash;
-use crate::FromInternalIterator;
+use crate::{FromInternalIterator, InternalIterator, IntoInternalIterator};
 
-impl<A> FromIternalIterator<A> for Vec<A> {
+impl<A> FromInternalIterator<A> for Vec<A> {
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoInternalIterator<Item = A>
     {
-        let mut v = Vec::new();
+        let mut result = Vec::new();
         iter.into_internal_iter().for_each(|item| {
-            v.push(item);
+            result.push(item);
         });
-        v
+        result
     }
 }
 
-impl FromIternalIterator<char> for String {
+impl FromInternalIterator<char> for String {
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoInternalIterator<Item = A>
+        T: IntoInternalIterator<Item = char>
     {
-        let mut v = String::new();
+        let mut result = String::new();
         iter.into_internal_iter().for_each(|item| {
-            v.push(item);
+            result.push(item);
         });
-        v
+        result
     }
 }
 
-impl<T: Eq + Hash> FromIternalIterator<T> for HashSet<T> {
+impl<A: Eq + Hash> FromInternalIterator<A> for HashSet<A> {
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoInternalIterator<Item = A>
     {
-        let mut v = HashSet::new();
+        let mut result = HashSet::new();
         iter.into_internal_iter().for_each(|item| {
-            v.insert(item);
+            result.insert(item);
         });
-        v
+        result
     }
 }
 
-impl<K: Eq + Hash, V> FromIternalIterator<(K, V)> for HashMap<K, V> {
+impl<K: Eq + Hash, V> FromInternalIterator<(K, V)> for HashMap<K, V> {
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoInternalIterator<Item = A>
+        T: IntoInternalIterator<Item = (K, V)>
     {
-        let mut v = HashMap::new();
+        let mut result = HashMap::new();
         iter.into_internal_iter().for_each(|(k, v)| {
-            v.insert(k, v);
+            result.insert(k, v);
         });
-        v
+        result
     }
 }
 
-impl<T: Ord> FromIternalIterator<T> for BTreeSet<T> {
+impl<A: Ord> FromInternalIterator<A> for BTreeSet<A> {
     fn from_iter<T>(iter: T) -> Self
     where
         T: IntoInternalIterator<Item = A>
     {
-        let mut v = BTreeSet::new();
+        let mut result = BTreeSet::new();
         iter.into_internal_iter().for_each(|item| {
-            v.insert(item);
+            result.insert(item);
         });
-        v
+        result
     }
 }
 
-impl<K: Ord, V> FromIternalIterator<(K, V)> for BTreeMap<K, V> {
+impl<K: Ord, V> FromInternalIterator<(K, V)> for BTreeMap<K, V> {
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoInternalIterator<Item = A>
+        T: IntoInternalIterator<Item = (K, V)>
     {
-        let mut v = BTreeMap::new();
+        let mut result = BTreeMap::new();
         iter.into_internal_iter().for_each(|(k, v)| {
-            v.insert(k, v);
+            result.insert(k, v);
         });
-        v
+        result
     }
 }
