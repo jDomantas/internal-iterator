@@ -1,6 +1,7 @@
 use crate::{InternalIterator, IntoInternalIterator};
 
 
+/// An iterator that links two iterators together, in a chain.
 pub struct Chain<A, B> {
     pub(crate) first: A,
     pub(crate) second: B,
@@ -23,6 +24,7 @@ where
 }
 
 
+/// An iterator that clones the elements of an underlying iterator.
 pub struct Cloned<I> {
     pub(crate) iter: I,
 }
@@ -43,6 +45,7 @@ where
 }
 
 
+/// An iterator that copies the elements of an underlying iterator.
 pub struct Copied<I> {
     pub(crate) iter: I,
 }
@@ -63,6 +66,7 @@ where
 }
 
 
+/// An iterator that yields the current count and the element during iteration.
 pub struct Enumerate<I> {
     pub(crate) iter: I,
 }
@@ -87,6 +91,7 @@ where
 }
 
 
+/// An iterator that filters the elements of `iter` with `predicate`.
 pub struct Filter<I, F> {
     pub(crate) iter: I,
     pub(crate) predicate: F,
@@ -115,6 +120,7 @@ where
 }
 
 
+/// An iterator that uses `f` to both filter and map elements from `iter`.
 pub struct FilterMap<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -137,6 +143,8 @@ where
 }
 
 
+/// An iterator that maps each element to an iterator, and yields the elements
+/// of the produced iterators.
 pub struct FlatMap<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -160,6 +168,8 @@ where
 }
 
 
+/// An iterator that calls a function with a reference to each element before
+/// yielding it.
 pub struct Inspect<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -185,6 +195,7 @@ where
 }
 
 
+/// An iterator that maps the values of `iter` with `f`.
 pub struct Map<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -207,6 +218,7 @@ where
 }
 
 
+/// An iterator that skips over `n` elements of `iter`.
 pub struct Skip<I> {
     pub(crate) iter: I,
     pub(crate) n: usize,
@@ -235,6 +247,7 @@ where
 }
 
 
+/// An iterator that only iterates over the first `n` iterations of `iter`.
 pub struct Take<I> {
     pub(crate) iter: I,
     pub(crate) n: usize,
@@ -250,6 +263,7 @@ where
     where
         C: FnMut(Self::Item) -> Option<R>
     {
+        // FIXME: this needs to stop iterating after n reaches zero
         let Self { iter, mut n } = self;
         iter.find_map(|item| {
             if n > 0 {
@@ -263,6 +277,7 @@ where
 }
 
 
+/// A wrapper type to convert [`std::iter::Iterator`] to [`InternalIterator`].
 pub struct Internal<I> {
     pub(crate) iterator: I,
 }
