@@ -14,7 +14,7 @@ where
 {
     type Item = A::Item;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -36,7 +36,7 @@ where
 {
     type Item = T;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -57,7 +57,7 @@ where
 {
     type Item = T;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -77,7 +77,7 @@ where
 {
     type Item = (usize, I::Item);
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -104,7 +104,7 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -133,7 +133,7 @@ where
 {
     type Item = T;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -158,7 +158,7 @@ where
 {
     type Item = T;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -182,7 +182,7 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -208,7 +208,7 @@ where
 {
     type Item = T;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -230,7 +230,7 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -259,7 +259,7 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<C, R>(self, mut consumer: C) -> Option<R>
+    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
     where
         C: FnMut(Self::Item) -> Option<R>
     {
@@ -288,7 +288,7 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<F, T>(mut self, consumer: F) -> Option<T>
+    fn find_map<T, F>(mut self, consumer: F) -> Option<T>
     where
         F: FnMut(Self::Item) -> Option<T>
     {

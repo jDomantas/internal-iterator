@@ -1,11 +1,107 @@
-//! Internal iterator equivalent of [`std::iter::Iterator`].
-//!
-//! In some cases implementing `Iterator` can be difficult - for tree shaped
-//! structures you would need to store iteration state at every level, which
-//! implies dynamic allocation and nontrivial amounts of state. On the other
-//! hand, internal iteration is roughly equivalent to calling a provided
-//! function on every element you need to yield and is much simpler to
-//! implement.
+#![doc = "Internal iterator equivalent of [`std::iter::Iterator`].
+
+In some cases implementing `Iterator` can be difficult - for tree shaped
+structures you would need to store iteration state at every level, which
+implies dynamic allocation and nontrivial amounts of state. On the other
+hand, internal iteration is roughly equivalent to calling a provided
+function on every element you need to yield and is much simpler to
+implement.
+
+This library provides to provide `std`-like iteration facilities, but
+based on internal iteration. The goal is to be easy to make use of and feel
+familiar to users of `Iterator`. There is one core trait, [`InternalIterator`].
+By implementing it you can use its provided methods to construct iterator
+pipelines similar to those possible by using regular iterators.
+
+# Implementing `InternalIterator`
+
+Whereas the driving method for regular iterators is [`Iterator::next`], the one
+used here is [`InternalIterator::find_map`].
+
+```rust
+use internal_iterator::{InternalIterator, IteratorExt};
+
+struct Tree {
+    value: i32,
+    children: Vec<Tree>,
+}
+
+// We implement InternalIterator on the tree directly. You could also
+// introduce a wrapper struct and create it in `.iter()`, `.iter_mut()`, just
+// like with usual collections.
+impl InternalIterator for Tree {
+    type Item = i32;
+
+    fn find_map<T, F>(self, mut f: F) -> Option<T>
+    where
+        F: FnMut(i32) -> Option<T>,
+    {
+        self.find_map_helper(&mut f)
+    }
+}
+
+impl Tree {
+    fn find_map_helper<T>(&self, f: &mut impl FnMut(i32) -> Option<T>) -> Option<T> {
+        let result = f(self.value);
+        if result.is_some() {
+            return result;
+        }
+        for child in &self.children {
+            let result = child.find_map_helper(f);
+            if result.is_some() {
+                return result;
+            }
+        }
+        None
+    }
+}
+
+// now we can use InternalIterator facilities to construct iterator pipelines
+
+let tree = Tree {
+    value: 1,
+    children: vec![
+        Tree {
+            value: 2,
+            children: Vec::new(),
+        },
+        Tree {
+            value: 3,
+            children: vec![
+                Tree {
+                    value: 4,
+                    children: Vec::new(),
+                },
+            ]
+        },
+    ]
+};
+
+let result = tree
+    .map(|x| x * 2)
+    .filter(|&x| x > 3)
+    .flat_map(|x| vec![x, x * 10]
+        .into_iter()
+        .into_internal())
+    .collect::<Vec<_>>();
+
+assert_eq!(result, vec![4, 40, 6, 60, 8, 80]);
+```
+
+# Differences from `std::iter::Iterator`
+
+The main difference between `Iterator` and `InternalIterator` traits is that
+all methods in `InternalIterator` consume the iterators. While for regular
+iterators you can for example call `nth` and then keep using the iterator with
+remaining elements being untouched, you cannot do so with `InternalIterator`.
+This is a deliberate choice, as the goal of this library allow having a simpler
+iterator implementation without losing too much power. Regular iterators must
+keep state to be able to implement `next`, but state is not a hard requirement
+for internal iteration and requiring it would defeat the purpose of the library.
+
+Because internal iterators drive themselves instead of being driven by an
+outside called, some methods from `Iterator` are not possible to implement. The
+most prominent example is [`Iterator::zip`]."]
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
@@ -36,7 +132,7 @@ pub trait InternalIterator: Sized {
     ///
     /// assert_eq!(parsed, Some(4));
     /// ```
-    fn find_map<F, R>(self, f: F) -> Option<R>
+    fn find_map<R, F>(self, f: F) -> Option<R>
     where
         F: FnMut(Self::Item) -> Option<R>;
 
@@ -282,7 +378,7 @@ pub trait InternalIterator: Sized {
     where
         F: FnMut(Self::Item)
     {
-        self.find_map::<_, ()>(|item| {
+        self.find_map::<(), _>(|item| {
             f(item);
             None
         });
@@ -422,6 +518,21 @@ pub trait InternalIterator: Sized {
             }
         });
         min
+    }
+
+    /// Returns the first element of the iterator.
+    ///
+    /// Note that unlike [`Iterator::next`], this method consumes the iterator.
+    /// It is really only useful for getting the first element in the iterator,
+    /// and is called `next` just for api similarity with regular iterators.
+    ///
+    /// ```
+    /// # use internal_iterator::{InternalIterator, IteratorExt};
+    /// let a = [1, 2, 3];
+    /// assert_eq!(a.iter().into_internal().next(), Some(&1));
+    /// ```
+    fn next(self) -> Option<Self::Item> {
+        self.find_map(Some)
     }
 
     /// Returns the `n`th element of the iterator.
