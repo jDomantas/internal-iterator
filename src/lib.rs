@@ -101,15 +101,36 @@ for internal iteration and requiring it would defeat the purpose of the library.
 
 Because internal iterators drive themselves instead of being driven by an
 outside called, some methods from `Iterator` are not possible to implement. The
-most prominent example is [`Iterator::zip`]."]
+most prominent example is [`Iterator::zip`].
+
+# `nostd` compatibility
+
+This crate has two optional features:
+
+* `alloc` - includes `FromIterator` impls for `String`, `Vec`, `BTreeMap`, and
+`BTreeSet`. Brings in a dependency on `alloc`.
+* `std` - includes `FromIterator` impls for `HashSet` and `HashMap`. Brings in
+a dependency on `std`.
+
+Both of these features are enabled by default, but you can disable them if you
+are compiling without `std` or even without `alloc`."]
+
+#![cfg_attr(not(feature = "std"), no_std)]
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
 mod adaptors;
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+#[cfg(feature = "alloc")]
+mod alloc_impls;
+
+#[cfg(feature = "std")]
 mod std_impls;
 
-use std::cmp::Ordering;
+use core::cmp::Ordering;
 pub use crate::adaptors::*;
 
 /// Internal iterator over a collection.

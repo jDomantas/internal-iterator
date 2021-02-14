@@ -84,7 +84,7 @@ where
         let mut idx = 0;
         self.iter.find_map(|item| {
             let next = idx + 1;
-            let idx = std::mem::replace(&mut idx, next);
+            let idx = core::mem::replace(&mut idx, next);
             consumer((idx, item))
         })
     }

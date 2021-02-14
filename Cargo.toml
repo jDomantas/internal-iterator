@@ -7,4 +7,11 @@ repository = "https://github.com/jDomantas/internal-iterator"
 license = "MIT OR Apache-2.0"
 description = "Internal iteration equivalent of `std::iter::Iterator`."
 
+[features]
+default = ["alloc", "std"]
+# Includes trait impls for collection types defined in alloc. Enabled by default.
+alloc = []
+# Includes trait impls for collection types defined in std. Enabled by default.
+std = ["alloc"]
+
 [dependencies]
