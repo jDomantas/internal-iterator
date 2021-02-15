@@ -7,7 +7,7 @@ hand, internal iteration is roughly equivalent to calling a provided
 function on every element you need to yield and is much simpler to
 implement.
 
-This library provides to provide `std`-like iteration facilities, but
+This library aims to provide `std`-like iteration facilities, but
 based on internal iteration. The goal is to be easy to make use of and feel
 familiar to users of `Iterator`. There is one core trait, [`InternalIterator`].
 By implementing it you can use its provided methods to construct iterator
