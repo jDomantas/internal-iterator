@@ -268,11 +268,11 @@ where
         iter.find_map(|item| {
             if n > 0 {
                 n -= 1;
-                consumer(item)
+                consumer(item).map(Some)
             } else {
-                None
+                Some(None)
             }
-        })
+        }).unwrap_or(None)
     }
 }
 

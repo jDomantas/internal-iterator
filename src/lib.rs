@@ -130,6 +130,9 @@ mod alloc_impls;
 #[cfg(feature = "std")]
 mod std_impls;
 
+#[cfg(test)]
+mod tests;
+
 use core::cmp::Ordering;
 pub use crate::adaptors::*;
 
