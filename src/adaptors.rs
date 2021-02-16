@@ -268,16 +268,12 @@ where
             return None;
         }
         iter.find_map(|item| {
-            if n > 0 {
-                n -= 1;
-                let result = consumer(item);
-                if n == 0 || result.is_some() {
-                    Some(result)
-                } else {
-                    None
-                }
+            n -= 1;
+            let result = consumer(item);
+            if n == 0 || result.is_some() {
+                Some(result)
             } else {
-                Some(None)
+                None
             }
         }).unwrap_or(None)
     }
