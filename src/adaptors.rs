@@ -263,14 +263,17 @@ where
     where
         C: FnMut(Self::Item) -> Option<R>
     {
-        // FIXME: this needs to stop iterating after n reaches zero
         let Self { iter, mut n } = self;
+        if n == 0 {
+            return None;
+        }
         iter.find_map(|item| {
-            if n > 0 {
-                n -= 1;
-                consumer(item).map(Some)
+            n -= 1;
+            let result = consumer(item);
+            if n == 0 || result.is_some() {
+                Some(result)
             } else {
-                Some(None)
+                None
             }
         }).unwrap_or(None)
     }

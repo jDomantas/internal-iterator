@@ -17,12 +17,13 @@ fn take_short_circuit() {
         where
             F: FnMut(i32) -> Option<T>,
         {
-            for &x in &[1, 2, 3, 4, 5] {
+            for &x in &[1, 2, 3] {
                 let result = f(x);
                 if result.is_some() {
                     return result;
                 }
             }
+            // take(3) shouldn't expect any more items
             *self.exhausted = true;
             None
         }
@@ -36,6 +37,25 @@ fn take_short_circuit() {
     let items = iter.take(3).collect::<Vec<_>>();
     assert_eq!(items, vec![1, 2, 3]);
     assert!(!exhausted);
+}
+
+#[test]
+fn take_empty() {
+    struct Iter;
+
+    impl InternalIterator for Iter {
+        type Item = i32;
+
+        fn find_map<T, F>(self, _: F) -> Option<T>
+        where
+            F: FnMut(i32) -> Option<T>,
+        {
+            unreachable!()
+        }
+    }
+
+    // We should not hit the unreachable panic.
+    assert_eq!(Iter.take(0).next(), None);
 }
 
 #[cfg(feature = "alloc")]
