@@ -19,7 +19,7 @@ Featuring:
 
 The difference between external and internal iteration is:
 
-* With external iteration, you call `next()` repeadetly to get elements out of
+* With external iteration, you call `next()` repeatedly to get elements out of
 the iterator. Iterators must store its iteration state to know where to pick up
 on each `next` call. External iteration gives more power to the consumer - for
 example, it is very easy to implement a `for` loop by transforming it to
