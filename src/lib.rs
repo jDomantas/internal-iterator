@@ -509,6 +509,13 @@ pub trait InternalIterator: Sized {
         max
     }
 
+    /// Returns the element that gives the maximum value from the specified function.
+    fn max_by_key<B: Ord>(self, mut key: impl FnMut(&Self::Item) -> B) -> Option<Self::Item> {
+        self.map(|x| (key(&x), x))
+            .max_by(|(kx, _), (ky, _)| kx.cmp(ky))
+            .map(|(_, x)| x)
+    }
+
     /// Returns the minimum element of an iterator.
     ///
     /// ```
@@ -542,6 +549,13 @@ pub trait InternalIterator: Sized {
             }
         });
         min
+    }
+
+    /// Returns the element that gives the maximum value from the specified function.
+    fn min_by_key<B: Ord>(self, mut key: impl FnMut(&Self::Item) -> B) -> Option<Self::Item> {
+        self.map(|x| (key(&x), x))
+            .min_by(|(kx, _), (ky, _)| kx.cmp(ky))
+            .map(|(_, x)| x)
     }
 
     /// Returns the first element of the iterator.
