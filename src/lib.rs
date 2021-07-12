@@ -551,7 +551,7 @@ pub trait InternalIterator: Sized {
         min
     }
 
-    /// Returns the element that gives the maximum value from the specified function.
+    /// Returns the element that gives the minimum value from the specified function.
     fn min_by_key<B: Ord>(self, mut key: impl FnMut(&Self::Item) -> B) -> Option<Self::Item> {
         self.map(|x| (key(&x), x))
             .min_by(|(kx, _), (ky, _)| kx.cmp(ky))
