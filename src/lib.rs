@@ -80,9 +80,7 @@ let tree = Tree {
 let result = tree
     .map(|x| x * 2)
     .filter(|&x| x > 3)
-    .flat_map(|x| [x, x * 10]
-        .into_iter()
-        .into_internal())
+    .flat_map(|x| [x, x * 10])
     .collect::<Vec<_>>();
 
 assert_eq!(result, vec![4, 40, 6, 60, 8, 80]);
@@ -107,10 +105,11 @@ most prominent example is [`Iterator::zip`].
 
 This crate has two optional features:
 
-* `alloc` - includes `FromIterator` impls for `String`, `Vec`, `BTreeMap`, and
-`BTreeSet`. Brings in a dependency on `alloc`.
-* `std` - includes `FromIterator` impls for `HashSet` and `HashMap`. Brings in
-a dependency on `std`.
+* `alloc` - includes `FromInternalIterator` and `IntoInternalIterator` impls
+for `String`, `Vec`, `BTreeMap`, and `BTreeSet`. Brings in a dependency on
+`alloc`.
+* `std` - includes `FromInternalIterator` and `IntoInternalIterator` impls for
+`HashSet` and `HashMap`. Brings in a dependency on `std`.
 
 Both of these features are enabled by default, but you can disable them if you
 are compiling without `std` or even without `alloc`."]
@@ -375,9 +374,7 @@ pub trait InternalIterator: Sized {
     ///
     /// let mapped = a.iter()
     ///     .into_internal()
-    ///     .flat_map(|&x| [x * 10 + 2, x * 10 + 3]
-    ///         .into_iter()
-    ///         .into_internal())
+    ///     .flat_map(|&x| [x * 10 + 2, x * 10 + 3])
     ///     .collect::<Vec<_>>();
     ///
     /// assert_eq!(mapped, vec![12, 13, 22, 23, 32, 33]);
@@ -687,6 +684,36 @@ where
     fn into_internal_iter(self) -> Self::IntoIter {
         self
     }
+}
+
+macro_rules! into_internal_impls {
+    ($([$($generics:tt)*] $ty:ty,)*) => {
+        $(
+            impl<$($generics)*> IntoInternalIterator for $ty {
+                type Item = <$ty as IntoIterator>::Item;
+                type IntoIter = crate::Internal<<$ty as IntoIterator>::IntoIter>;
+                fn into_internal_iter(self) -> Self::IntoIter {
+                    self.into_iter().into_internal()
+                }
+            }
+        )*
+    }
+}
+
+pub(crate) use into_internal_impls;
+
+into_internal_impls! {
+    ['a, T] &'a [T],
+    ['a, T] &'a mut [T],
+    ['a, T, const N: usize] &'a [T; N],
+    ['a, T, const N: usize] &'a mut [T; N],
+    [T, const N: usize] [T; N],
+    ['a, T] &'a Option<T>,
+    ['a, T] &'a mut Option<T>,
+    [T] Option<T>,
+    ['a, T, E] &'a Result<T, E>,
+    ['a, T, E] &'a mut Result<T, E>,
+    [T, E] Result<T, E>,
 }
 
 /// Extension trait to add conversion to [`InternalIterator`] for regular
