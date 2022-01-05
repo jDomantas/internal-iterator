@@ -133,6 +133,7 @@ mod std_impls;
 mod tests;
 
 use core::cmp::Ordering;
+use core::ops::ControlFlow;
 pub use crate::adaptors::*;
 
 /// Internal iterator over a collection.
@@ -140,6 +141,31 @@ pub use crate::adaptors::*;
 pub trait InternalIterator: Sized {
     /// Type of items yielded by the iterator.
     type Item;
+
+    /// Applies function each elements of the iterator. Stops early if the
+    /// function returns `ControlFlow::Break`.
+    ///
+    /// ```
+    /// # use internal_iterator::{InternalIterator, IteratorExt};
+    /// # use std::ops::ControlFlow;
+    /// let a = [1, 2, 3, 4, 5, 6];
+    /// let mut collected = Vec::new();
+    ///
+    /// let result = a.iter().into_internal().try_for_each(|&x| {
+    ///     collected.push(x);
+    ///     if x == 4 {
+    ///         ControlFlow::Break("stopped!")
+    ///     } else {
+    ///         ControlFlow::Continue(())
+    ///     }
+    /// });
+    ///
+    /// assert_eq!(collected, [1, 2, 3, 4]);
+    /// assert_eq!(result, ControlFlow::Break("stopped!"));
+    /// ```
+    fn try_for_each<R, F>(self, f: F) -> ControlFlow<R>
+    where
+        F: FnMut(Self::Item) -> ControlFlow<R>;
 
     /// Applies function to the elements of iterator and returns the first
     /// non-none result.
@@ -155,9 +181,22 @@ pub trait InternalIterator: Sized {
     ///
     /// assert_eq!(parsed, Some(4));
     /// ```
-    fn find_map<R, F>(self, f: F) -> Option<R>
+    fn find_map<R, F>(self, mut f: F) -> Option<R>
     where
-        F: FnMut(Self::Item) -> Option<R>;
+        F: FnMut(Self::Item) -> Option<R>
+    {
+        let value = self.try_for_each(|item| {
+            if let Some(value) = f(item) {
+                ControlFlow::Break(value)
+            } else {
+                ControlFlow::Continue(())
+            }
+        });
+        match value {
+            ControlFlow::Continue(()) => None,
+            ControlFlow::Break(value) => Some(value),
+        }
+    }
 
     /// Tests if every element of the iterator matches the predicate.
     ///
@@ -399,9 +438,9 @@ pub trait InternalIterator: Sized {
     where
         F: FnMut(Self::Item)
     {
-        self.find_map::<(), _>(|item| {
+        self.try_for_each::<(), _>(|item| {
             f(item);
-            None
+            ControlFlow::Continue(())
         });
     }
 
@@ -654,8 +693,6 @@ pub trait InternalIterator: Sized {
     // TODO: try_find
 
     // TODO: try_fold
-
-    // TODO: try_for_each
 
     // TODO: unzip
 }

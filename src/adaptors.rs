@@ -1,3 +1,5 @@
+use core::ops::ControlFlow;
+
 use crate::{InternalIterator, IntoInternalIterator};
 
 
@@ -14,12 +16,15 @@ where
 {
     type Item = A::Item;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { first, second } = self;
-        first.find_map(&mut consumer).or_else(|| second.find_map(consumer))
+        match first.try_for_each(&mut consumer) {
+            ControlFlow::Continue(()) => second.try_for_each(consumer),
+            br => br,
+        }
     }
 }
 
@@ -36,11 +41,11 @@ where
 {
     type Item = T;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
-        self.iter.find_map(|item| consumer(item.clone()))
+        self.iter.try_for_each(|item| consumer(item.clone()))
     }
 }
 
@@ -57,11 +62,11 @@ where
 {
     type Item = T;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
-        self.iter.find_map(|&item| consumer(item))
+        self.iter.try_for_each(|&item| consumer(item))
     }
 }
 
@@ -77,12 +82,12 @@ where
 {
     type Item = (usize, I::Item);
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let mut idx = 0;
-        self.iter.find_map(|item| {
+        self.iter.try_for_each(|item| {
             let next = idx + 1;
             let idx = core::mem::replace(&mut idx, next);
             consumer((idx, item))
@@ -104,16 +109,16 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut predicate } = self;
-        iter.find_map(|item| {
+        iter.try_for_each(|item| {
             if predicate(&item) {
                 consumer(item)
             } else {
-                None
+                ControlFlow::Continue(())
             }
         })
     }
@@ -133,12 +138,15 @@ where
 {
     type Item = T;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut f } = self;
-        iter.find_map(|item| f(item).and_then(&mut consumer))
+        iter.try_for_each(|item| match f(item) {
+            Some(mapped) => consumer(mapped),
+            None => ControlFlow::Continue(()),
+        })
     }
 }
 
@@ -158,12 +166,12 @@ where
 {
     type Item = T;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut f } = self;
-        iter.find_map(|item| f(item).into_internal_iter().find_map(&mut consumer))
+        iter.try_for_each(|item| f(item).into_internal_iter().try_for_each(&mut consumer))
     }
 }
 
@@ -182,12 +190,12 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut f } = self;
-        iter.find_map(|item| {
+        iter.try_for_each(|item| {
             f(&item);
             consumer(item)
         })
@@ -208,12 +216,12 @@ where
 {
     type Item = T;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut f } = self;
-        iter.find_map(|item| consumer(f(item)))
+        iter.try_for_each(|item| consumer(f(item)))
     }
 }
 
@@ -230,17 +238,17 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut n } = self;
-        iter.find_map(|item| {
+        iter.try_for_each(|item| {
             if n == 0 {
                 consumer(item)
             } else {
                 n -= 1;
-                None
+                ControlFlow::Continue(())
             }
         })
     }
@@ -259,23 +267,26 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<R, C>(self, mut consumer: C) -> Option<R>
+    fn try_for_each<R, C>(self, mut consumer: C) -> ControlFlow<R>
     where
-        C: FnMut(Self::Item) -> Option<R>
+        C: FnMut(Self::Item) -> ControlFlow<R>
     {
         let Self { iter, mut n } = self;
         if n == 0 {
-            return None;
+            return ControlFlow::Continue(());
         }
-        iter.find_map(|item| {
+        let result = iter.try_for_each(|item| {
             n -= 1;
-            let result = consumer(item);
-            if n == 0 || result.is_some() {
-                Some(result)
-            } else {
-                None
+            match consumer(item) {
+                _ if n == 0 => ControlFlow::Break(ControlFlow::Continue(())),
+                ControlFlow::Continue(()) => ControlFlow::Continue(()),
+                ControlFlow::Break(value) => ControlFlow::Break(ControlFlow::Break(value)),
             }
-        }).unwrap_or(None)
+        });
+        match result {
+            ControlFlow::Continue(()) => ControlFlow::Continue(()),
+            ControlFlow::Break(x) => x,
+        }
     }
 }
 
@@ -291,10 +302,10 @@ where
 {
     type Item = I::Item;
 
-    fn find_map<T, F>(mut self, consumer: F) -> Option<T>
+    fn try_for_each<T, F>(mut self, consumer: F) -> ControlFlow<T>
     where
-        F: FnMut(Self::Item) -> Option<T>
+        F: FnMut(Self::Item) -> ControlFlow<T>
     {
-        self.iterator.find_map(consumer)
+        self.iterator.try_for_each(consumer)
     }
 }
