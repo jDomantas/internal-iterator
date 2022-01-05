@@ -80,7 +80,7 @@ let tree = Tree {
 let result = tree
     .map(|x| x * 2)
     .filter(|&x| x > 3)
-    .flat_map(|x| vec![x, x * 10]
+    .flat_map(|x| [x, x * 10]
         .into_iter()
         .into_internal())
     .collect::<Vec<_>>();
@@ -375,7 +375,7 @@ pub trait InternalIterator: Sized {
     ///
     /// let mapped = a.iter()
     ///     .into_internal()
-    ///     .flat_map(|&x| vec![x * 10 + 2, x * 10 + 3]
+    ///     .flat_map(|&x| [x * 10 + 2, x * 10 + 3]
     ///         .into_iter()
     ///         .into_internal())
     ///     .collect::<Vec<_>>();

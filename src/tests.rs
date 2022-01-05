@@ -180,7 +180,7 @@ fn readme_example() {
         .into_iter()
         .map(|x| x * 2)
         .filter(|&x| x > 5)
-        .flat_map(|x| vec![x, x * 10])
+        .flat_map(|x| [x, x * 10])
         .collect::<Vec<_>>();
 
     assert_eq!(iterator_result, vec![8, 80, 6, 60, 10, 100]);
@@ -190,7 +190,7 @@ fn readme_example() {
         .into_internal_iter()
         .map(|x| x * 2)
         .filter(|&x| x > 5)
-        .flat_map(|x| vec![x, x * 10].into_iter().into_internal())
+        .flat_map(|x| [x, x * 10].into_iter().into_internal())
         .collect::<Vec<_>>();
 
     assert_eq!(internal_iterator_result, vec![8, 80, 6, 60, 10, 100]);
