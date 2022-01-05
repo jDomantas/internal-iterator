@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use crate::{FromInternalIterator, InternalIterator, IntoInternalIterator};
+use crate::{FromInternalIterator, InternalIterator, IntoInternalIterator, IteratorExt};
 
 impl<A: Eq + Hash> FromInternalIterator<A> for HashSet<A> {
     fn from_iter<T>(iter: T) -> Self
@@ -26,4 +26,12 @@ impl<K: Eq + Hash, V> FromInternalIterator<(K, V)> for HashMap<K, V> {
         });
         result
     }
+}
+
+crate::into_internal_impls! {
+    ['a, T] &'a HashSet<T>,
+    [T] HashSet<T>,
+    ['a, K, V] &'a HashMap<K, V>,
+    ['a, K, V] &'a mut HashMap<K, V>,
+    [K, V] HashMap<K, V>,
 }
