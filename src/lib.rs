@@ -16,9 +16,10 @@ pipelines similar to those possible by using regular iterators.
 # Implementing `InternalIterator`
 
 Whereas the driving method for regular iterators is [`Iterator::next`], the one
-used here is [`InternalIterator::find_map`].
+used here is [`InternalIterator::try_for_each`].
 
 ```rust
+use std::ops::ControlFlow;
 use internal_iterator::{InternalIterator, IteratorExt};
 
 struct Tree {
@@ -32,27 +33,21 @@ struct Tree {
 impl InternalIterator for Tree {
     type Item = i32;
 
-    fn find_map<T, F>(self, mut f: F) -> Option<T>
+    fn try_for_each<T, F>(self, mut f: F) -> ControlFlow<T>
     where
-        F: FnMut(i32) -> Option<T>,
+        F: FnMut(i32) -> ControlFlow<T>,
     {
-        self.find_map_helper(&mut f)
+        self.iter_helper(&mut f)
     }
 }
 
 impl Tree {
-    fn find_map_helper<T>(&self, f: &mut impl FnMut(i32) -> Option<T>) -> Option<T> {
-        let result = f(self.value);
-        if result.is_some() {
-            return result;
-        }
+    fn iter_helper<T>(&self, f: &mut impl FnMut(i32) -> ControlFlow<T>) -> ControlFlow<T> {
+        f(self.value)?;
         for child in &self.children {
-            let result = child.find_map_helper(f);
-            if result.is_some() {
-                return result;
-            }
+            child.iter_helper(f)?;
         }
-        None
+        ControlFlow::Continue(())
     }
 }
 
