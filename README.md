@@ -104,43 +104,40 @@ impl Iterator for TreeIter {
 Whew, that was quite tricky, with all the index jugling and all.
 
 Let's try the same with `InternalIterator`. The core method that drives the
-trait is `find_map`:
+trait is `try_for_each`:
 
 ```rust
+use std::ops::ControlFlow;
+
 struct TreeInternalIter {
     tree: Tree,
 }
 
 // we need a helper because we need to use `f` multiple times, but an arbitrary
 // FnMut cannot be copied or reborrowed
-fn find_map_helper<T>(tree: Tree, f: &mut impl FnMut(i32) -> Option<T>) -> Option<T> {
-    let result = f(tree.0);
-    if result.is_some() {
-        return result;
-    }
+fn iter_helper<T>(tree: Tree, f: &mut impl FnMut(i32) -> ControlFlow<T>) -> ControlFlow<T> {
+    f(tree.0)?;
     for child in tree.1 {
-        let result = find_map_helper(child, f);
-        if result.is_some() {
-            return result;
-        }
+        iter_helper(child, f)?;
     }
-    None
+    ControlFlow::Continue(())
 }
 
 impl InternalIterator for TreeInternalIter {
     type Item = i32;
 
-    fn find_map<T, F>(self, mut f: F) -> Option<T>
+    fn try_for_each<T, F>(self, mut f: F) -> ControlFlow<T>
     where
-        F: FnMut(i32) -> Option<T>,
+        F: FnMut(i32) -> ControlFlow<T>,
     {
-        find_map_helper(self.tree, &mut f)
+        iter_helper(self.tree, &mut f)
     }
 }
 ```
 
 That was a lot more straightforward, less error prone, and does not even require
-any dynamic memory allocation!
+any dynamic memory allocation! And thanks to `std::ops::ControlFlow` and `?`
+operator the implementation is very easy to write.
 
 Both of them allow constructing elaborate iterator pipelines:
 

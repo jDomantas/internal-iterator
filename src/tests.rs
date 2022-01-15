@@ -13,19 +13,16 @@ fn take_short_circuit() {
     impl<'a> InternalIterator for Iter<'a> {
         type Item = i32;
 
-        fn find_map<T, F>(self, mut f: F) -> Option<T>
+        fn try_for_each<T, F>(self, mut f: F) -> ControlFlow<T>
         where
-            F: FnMut(i32) -> Option<T>,
+            F: FnMut(i32) -> ControlFlow<T>,
         {
             for &x in &[1, 2, 3] {
-                let result = f(x);
-                if result.is_some() {
-                    return result;
-                }
+                f(x)?;
             }
             // take(3) shouldn't expect any more items
             *self.exhausted = true;
-            None
+            ControlFlow::Continue(())
         }
     }
 
@@ -46,9 +43,9 @@ fn take_empty() {
     impl InternalIterator for Iter {
         type Item = i32;
 
-        fn find_map<T, F>(self, _: F) -> Option<T>
+        fn try_for_each<T, F>(self, _: F) -> ControlFlow<T>
         where
-            F: FnMut(i32) -> Option<T>,
+            F: FnMut(i32) -> ControlFlow<T>,
         {
             unreachable!()
         }
@@ -142,28 +139,25 @@ fn readme_example() {
 
     // we need a helper because we need to use `f` multiple times, but an arbitrary
     // FnMut cannot be copied or reborrowed
-    fn find_map_helper<T>(tree: Tree, f: &mut impl FnMut(i32) -> Option<T>) -> Option<T> {
-        let result = f(tree.0);
-        if result.is_some() {
-            return result;
-        }
+    fn for_each_helper<T>(
+        tree: Tree,
+        f: &mut impl FnMut(i32) -> ControlFlow<T>,
+    ) -> ControlFlow<T> {
+        f(tree.0)?;
         for child in tree.1 {
-            let result = find_map_helper(child, f);
-            if result.is_some() {
-                return result;
-            }
+            for_each_helper(child, f)?
         }
-        None
+        ControlFlow::Continue(())
     }
 
     impl InternalIterator for TreeInternalIter {
         type Item = i32;
 
-        fn find_map<T, F>(self, mut f: F) -> Option<T>
+        fn try_for_each<T, F>(self, mut f: F) -> ControlFlow<T>
         where
-            F: FnMut(i32) -> Option<T>,
+            F: FnMut(i32) -> ControlFlow<T>,
         {
-            find_map_helper(self.tree, &mut f)
+            for_each_helper(self.tree, &mut f)
         }
     }
 
