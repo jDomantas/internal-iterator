@@ -4,6 +4,7 @@ use crate::{InternalIterator, IntoInternalIterator};
 
 
 /// An iterator that links two iterators together, in a chain.
+#[derive(Clone)]
 pub struct Chain<A, B> {
     pub(crate) first: A,
     pub(crate) second: B,
@@ -30,6 +31,7 @@ where
 
 
 /// An iterator that clones the elements of an underlying iterator.
+#[derive(Clone)]
 pub struct Cloned<I> {
     pub(crate) iter: I,
 }
@@ -51,6 +53,7 @@ where
 
 
 /// An iterator that copies the elements of an underlying iterator.
+#[derive(Clone)]
 pub struct Copied<I> {
     pub(crate) iter: I,
 }
@@ -72,6 +75,7 @@ where
 
 
 /// An iterator that yields the current count and the element during iteration.
+#[derive(Clone)]
 pub struct Enumerate<I> {
     pub(crate) iter: I,
 }
@@ -97,6 +101,7 @@ where
 
 
 /// An iterator that filters the elements of `iter` with `predicate`.
+#[derive(Clone)]
 pub struct Filter<I, F> {
     pub(crate) iter: I,
     pub(crate) predicate: F,
@@ -126,6 +131,7 @@ where
 
 
 /// An iterator that uses `f` to both filter and map elements from `iter`.
+#[derive(Clone)]
 pub struct FilterMap<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -153,6 +159,7 @@ where
 
 /// An iterator that maps each element to an iterator, and yields the elements
 /// of the produced iterators.
+#[derive(Clone)]
 pub struct FlatMap<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -178,6 +185,7 @@ where
 
 /// An iterator that calls a function with a reference to each element before
 /// yielding it.
+#[derive(Clone)]
 pub struct Inspect<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -204,6 +212,7 @@ where
 
 
 /// An iterator that maps the values of `iter` with `f`.
+#[derive(Clone)]
 pub struct Map<I, F> {
     pub(crate) iter: I,
     pub(crate) f: F,
@@ -227,6 +236,7 @@ where
 
 
 /// An iterator that skips over `n` elements of `iter`.
+#[derive(Clone)]
 pub struct Skip<I> {
     pub(crate) iter: I,
     pub(crate) n: usize,
@@ -256,6 +266,7 @@ where
 
 
 /// An iterator that only iterates over the first `n` iterations of `iter`.
+#[derive(Clone)]
 pub struct Take<I> {
     pub(crate) iter: I,
     pub(crate) n: usize,
@@ -292,6 +303,7 @@ where
 
 
 /// A wrapper type to convert [`std::iter::Iterator`] to [`InternalIterator`].
+#[derive(Clone)]
 pub struct Internal<I> {
     pub(crate) iterator: I,
 }
