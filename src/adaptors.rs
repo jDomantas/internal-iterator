@@ -308,4 +308,16 @@ where
     {
         self.iterator.try_for_each(consumer)
     }
+
+    fn count(self) -> usize {
+        self.iterator.count()
+    }
+
+    fn last(self) -> Option<Self::Item> {
+        self.iterator.last()
+    }
+
+    fn nth(mut self, n: usize) -> Option<Self::Item> {
+        self.iterator.nth(n)
+    }
 }
