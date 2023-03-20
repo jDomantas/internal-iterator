@@ -27,6 +27,13 @@ where
             br => br,
         }
     }
+
+    fn last(self) -> Option<Self::Item> {
+        match (self.first.last(), self.second.last()) {
+            (_, Some(x)) | (Some(x), None) => Some(x),
+            (None, None) => None,
+        }
+    }
 }
 
 
@@ -71,6 +78,18 @@ where
     {
         self.iter.try_for_each(|&item| consumer(item))
     }
+
+    fn count(self) -> usize {
+        self.iter.count()
+    }
+
+    fn last(self) -> Option<Self::Item> {
+        self.iter.last().copied()
+    }
+
+    fn nth(self, n: usize) -> Option<Self::Item> {
+        self.iter.nth(n).copied()
+    }
 }
 
 
@@ -96,6 +115,15 @@ where
             let idx = core::mem::replace(&mut idx, next);
             consumer((idx, item))
         })
+    }
+
+    fn count(self) -> usize {
+        self.iter.count()
+    }
+
+    fn nth(self, n: usize) -> Option<Self::Item> {
+        let value = self.iter.nth(n)?;
+        Some((n, value))
     }
 }
 
