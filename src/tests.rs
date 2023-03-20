@@ -55,6 +55,86 @@ fn take_empty() {
     assert_eq!(Iter.take(0).next(), None);
 }
 
+#[test]
+fn map_side_effects_preserved() {
+    let mut closure_calls = 0;
+    let count = (10..25)
+        .into_internal()
+        .map(|x| {
+            closure_calls += 1;
+            x * 2
+        })
+        .count();
+    assert_eq!(count, 15);
+    assert_eq!(closure_calls, 15);
+
+    let mut closure_calls = 0;
+    let nth = (10..25)
+        .into_internal()
+        .map(|x| {
+            closure_calls += 1;
+            x * 2
+        })
+        .nth(12);
+    assert_eq!(nth, Some(44));
+    assert_eq!(closure_calls, 13);
+
+    let mut closure_calls = 0;
+    let last = (10..25)
+        .into_internal()
+        .map(|x| {
+            closure_calls += 1;
+            x * 2
+        })
+        .last();
+    assert_eq!(last, Some(48));
+    assert_eq!(closure_calls, 15);
+}
+
+#[test]
+fn clone_side_effects_preserved() {
+    use core::cell::Cell;
+
+    struct Weird<'a>(i32, &'a Cell<i32>);
+    impl Clone for Weird<'_> {
+        fn clone(&self) -> Self {
+            self.1.set(self.1.get() + 1);
+            Weird(self.0, self.1)
+        }
+    }
+
+    let clones = Cell::new(0);
+    let weirds = [
+        &Weird(0, &clones),
+        &Weird(1, &clones),
+        &Weird(2, &clones),
+        &Weird(3, &clones),
+    ];
+
+    let count = weirds
+        .into_internal_iter()
+        .cloned()
+        .count();
+    assert_eq!(count, 4);
+    assert_eq!(clones.get(), 4);
+    clones.set(0);
+
+    let nth = weirds
+        .into_internal_iter()
+        .cloned()
+        .nth(2);
+    assert_eq!(nth.unwrap().0, 2);
+    assert_eq!(clones.get(), 3);
+    clones.set(0);
+
+    let last = weirds
+        .into_internal_iter()
+        .cloned()
+        .last();
+    assert_eq!(last.unwrap().0, 3);
+    assert_eq!(clones.get(), 4);
+}
+
 #[cfg(feature = "alloc")]
 #[test]
 fn readme_example() {
