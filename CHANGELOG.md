@@ -1,3 +1,8 @@
+# 0.2.1
+
+- Adapters now derive `Clone`, just like std iterators [#11](https://github.com/jDomantas/internal-iterator/pull/11)
+- Some adapters now specialize `count`, `nth`, and `last` to be more efficient [#11](https://github.com/jDomantas/internal-iterator/pull/11) [#12](https://github.com/jDomantas/internal-iterator/pull/12)
+
 # 0.2.0
 
 - Make `try_for_each` the primary method [#8](https://github.com/jDomantas/internal-iterator/pull/8)
