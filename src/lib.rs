@@ -423,10 +423,17 @@ pub trait InternalIterator: Sized {
 
     // TODO: flatten
 
-    // TODO: fn fold<B, F>(self, init: B, f: F) -> B
-    // where
-    //     F: FnMut(B, Self::Item) -> B,
-    // { }
+    /// Folds every element into an accumulator by applying an operation, returning the final result.
+    fn fold<B, F>(self, init: B, mut f: F) -> B
+    where
+        F: FnMut(B, Self::Item) -> B,
+    {
+        let mut acc = Some(init);
+        self.for_each(|item|
+            acc = acc.take().map(|acc| f(acc, item))
+        );
+        acc.unwrap()
+    }
 
     /// Run the closure on each element.
     fn for_each<F>(self, mut f: F)
