@@ -424,6 +424,13 @@ pub trait InternalIterator: Sized {
     // TODO: flatten
 
     /// Folds every element into an accumulator by applying an operation, returning the final result.
+    /// 
+    /// ```
+    /// # use internal_iterator::{InternalIterator, IntoInternalIterator};
+    /// let a = [1, 2, 3];
+    /// let sum = a.into_internal_iter().fold(0, |acc, x| acc + x);
+    /// assert_eq!(sum, 6);
+    /// ```
     fn fold<B, F>(self, init: B, mut f: F) -> B
     where
         F: FnMut(B, Self::Item) -> B,
