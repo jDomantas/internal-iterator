@@ -1,3 +1,7 @@
+# 0.2.2
+
+- Added `fold` method [#14](https://github.com/jDomantas/internal-iterator/pull/14)
+
 # 0.2.1
 
 - Adapters now derive `Clone`, just like std iterators [#11](https://github.com/jDomantas/internal-iterator/pull/11)

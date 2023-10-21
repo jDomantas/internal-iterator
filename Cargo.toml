@@ -1,6 +1,6 @@
 [package]
 name = "internal-iterator"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["djade <djadenkus@gmail.com>"]
 edition = "2021"
 repository = "https://github.com/jDomantas/internal-iterator"
