@@ -1,3 +1,7 @@
+# 0.2.3
+
+- Added `from_fn` function to construct iterator from a closure [#17](https://github.com/jDomantas/internal-iterator/pull/17)
+
 # 0.2.2
 
 - Added `fold` method [#14](https://github.com/jDomantas/internal-iterator/pull/14)
