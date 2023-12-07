@@ -115,6 +115,7 @@ are compiling without `std` or even without `alloc`."]
 #![deny(missing_docs)]
 
 mod adaptors;
+mod from_fn_impl;
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -130,6 +131,7 @@ mod tests;
 use core::cmp::Ordering;
 use core::ops::ControlFlow;
 pub use crate::adaptors::*;
+pub use crate::from_fn_impl::{FromFn, BreakValue, from_fn};
 
 /// Internal iterator over a collection.
 #[must_use = "internal iterators are lazy and do nothing unless consumed"]
