@@ -449,7 +449,7 @@ pub trait InternalIterator: Sized {
     where
         F: FnMut(Self::Item)
     {
-        self.try_for_each::<std::convert::Infallible, _>(|item| {
+        self.try_for_each::<core::convert::Infallible, _>(|item| {
             f(item);
             ControlFlow::Continue(())
         });
